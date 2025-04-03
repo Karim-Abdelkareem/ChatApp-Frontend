@@ -26,7 +26,7 @@ export default function Chats() {
 
   useEffect(() => {
     // Connect to Socket.io
-    const newSocket = io("http://localhost:5000");
+    const newSocket = io("https://chat-app-backend-smoky.vercel.app/");
     setSocket(newSocket);
 
     // Register the user with Socket.io
@@ -45,7 +45,7 @@ export default function Chats() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/v1/users", {
+        const response = await axios.get("https://chat-app-backend-smoky.vercel.app//api/v1/users", {
           headers: {
             Authorization: `${localStorage.getItem("token")}`,
           },
@@ -64,7 +64,7 @@ export default function Chats() {
       try {
         if (senderId && receiverId) {
           const response = await axios.get(
-            `http://localhost:5000/api/v1/messages/${senderId}/${receiverId}`,
+            `https://chat-app-backend-smoky.vercel.app//api/v1/messages/${senderId}/${receiverId}`,
             {
               headers: {
                 Authorization: `${localStorage.getItem("token")}`,
@@ -109,7 +109,7 @@ export default function Chats() {
     setMessages((prev) => [...prev, messageData]);
 
     try {
-      await axios.post("http://localhost:5000/api/v1/messages", messageData, {
+      await axios.post("https://chat-app-backend-smoky.vercel.app//api/v1/messages", messageData, {
         headers: {
           Authorization: `${localStorage.getItem("token")}`,
         },
