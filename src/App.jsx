@@ -31,7 +31,7 @@ function App() {
               </Protected>
             }
           />
-          <Route path="/confirm-email" element={<ConfirmAccount />} />
+          <Route path="/confirm" element={<ConfirmAccount />} />
         </Routes>
       </BrowserRouter>
     </>
