@@ -31,6 +31,7 @@ function App() {
           }
         />
         <Route path="/confirm" element={<ConfirmAccount />} />
+        <Route path="*" element={<Home />} />
       </Routes>
     </BrowserRouter>
   );
