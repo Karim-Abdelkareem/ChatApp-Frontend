@@ -19,7 +19,7 @@ export default function Dialog({ onClose, email }) {
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://chat-app-react-livid.vercel.app/api/v1/users/verify-login",
+        "https://chat-app-backend-smoky.vercel.app/api/v1/users/verify-login",
         {
           email,
           otp,
