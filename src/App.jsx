@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -9,32 +9,30 @@ import ConfirmAccount from "./pages/ConfirmAccount";
 
 function App() {
   return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route
-            path="/chats"
-            element={
-              <Protected>
-                <Chats />
-              </Protected>
-            }
-          />
-          <Route
-            path="/chats/:senderId/:receiverId"
-            element={
-              <Protected>
-                <Chats />
-              </Protected>
-            }
-          />
-          <Route path="/confirm" element={<ConfirmAccount />} />
-        </Routes>
-      </BrowserRouter>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route
+          path="/chats"
+          element={
+            <Protected>
+              <Chats />
+            </Protected>
+          }
+        />
+        <Route
+          path="/chats/:senderId/:receiverId"
+          element={
+            <Protected>
+              <Chats />
+            </Protected>
+          }
+        />
+        <Route path="/confirm" element={<ConfirmAccount />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
