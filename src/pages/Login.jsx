@@ -10,16 +10,16 @@ export default function Login() {
   const [showOtp, setShowOtp] = useState(false);
   const navigate = useNavigate();
 
+  let localhost = "http://localhost:5000/";
+  let publichost = "https://chat-app-backend-smoky.vercel.app/";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post(
-        "https://chat-app-backend-smoky.vercel.app/api/v1/users/login",
-        {
-          email,
-        }
-      );
+      const response = await axios.post(`${publichost}api/v1/users/login`, {
+        email,
+      });
       console.log(response);
       if (response.data.status === "success") {
         setShowOtp(true);

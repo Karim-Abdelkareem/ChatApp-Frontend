@@ -18,7 +18,7 @@ export default function Chats() {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
 
-  let loaclhost = "http://localhost:5000";
+  let localhost = "http://localhost:5000/";
   let publichost = "https://chat-app-backend-smoky.vercel.app/";
 
   useEffect(() => {
@@ -48,14 +48,11 @@ export default function Chats() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(
-          "https://chat-app-backend-smoky.vercel.app/api/v1/users",
-          {
-            headers: {
-              Authorization: `${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        const response = await axios.get(`${publichost}api/v1/users`, {
+          headers: {
+            Authorization: `${localStorage.getItem("token")}`,
+          },
+        });
         setUsers(response.data.data);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -70,7 +67,7 @@ export default function Chats() {
       try {
         if (senderId && receiverId) {
           const response = await axios.get(
-            `https://chat-app-backend-smoky.vercel.app/api/v1/messages/${senderId}/${receiverId}`,
+            `${publichost}api/v1/messages/${senderId}/${receiverId}`,
             {
               headers: {
                 Authorization: `${localStorage.getItem("token")}`,
@@ -115,15 +112,11 @@ export default function Chats() {
     setMessages((prev) => [...prev, messageData]);
 
     try {
-      await axios.post(
-        "https://chat-app-backend-smoky.vercel.app/api/v1/messages",
-        messageData,
-        {
-          headers: {
-            Authorization: `${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      await axios.post(`${publichost}api/v1/messages`, messageData, {
+        headers: {
+          Authorization: `${localStorage.getItem("token")}`,
+        },
+      });
       setNewMessage("");
     } catch (error) {
       console.error("Error sending message:", error);

@@ -14,12 +14,15 @@ export default function Dialog({ onClose, email }) {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const localhost = "http://localhost:5000/";
+  const publichost = "https://chat-app-backend-smoky.vercel.app/";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const response = await axios.post(
-        "https://chat-app-backend-smoky.vercel.app/api/v1/users/verify-login",
+        `${publichost}api/v1/users/verify-login`,
         {
           email,
           otp,
