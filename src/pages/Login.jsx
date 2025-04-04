@@ -11,7 +11,7 @@ export default function Login() {
   const navigate = useNavigate();
 
   let localhost = "http://localhost:5000/";
-  let publichost = "https://chat-app-backend-smoky.vercel.app/";
+  let publichost = "https://blog-rntf.onrender.com/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();

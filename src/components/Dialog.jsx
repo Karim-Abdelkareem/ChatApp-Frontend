@@ -15,7 +15,7 @@ export default function Dialog({ onClose, email }) {
   const navigate = useNavigate();
 
   const localhost = "http://localhost:5000/";
-  const publichost = "https://chat-app-backend-smoky.vercel.app/";
+  const publichost = "https://blog-rntf.onrender.com/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();

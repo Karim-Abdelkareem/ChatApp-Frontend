@@ -16,7 +16,7 @@ export default function ConfirmAccount() {
     const confirmAccount = async () => {
       try {
         const response = await axios.post(
-          "https://chat-app-backend-smoky.vercel.app/api/v1/users/confirm-email",
+          "https://blog-rntf.onrender.com/api/v1/users/confirm-email",
           {
             email,
             otp,
