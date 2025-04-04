@@ -6,7 +6,6 @@ export default function Navbar() {
   const token = localStorage.getItem("token");
   const decodedToken = jwtDecode(token);
   const user = decodedToken;
-  console.log(user);
   const navigate = useNavigate();
   return (
     <div className="flex bg-gray-800 text-white justify-between items-center px-6 py-2 shadow-lg">
