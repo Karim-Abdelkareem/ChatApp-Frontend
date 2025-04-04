@@ -30,7 +30,10 @@ export default function Chats() {
   useEffect(() => {
     if (senderId) {
       // Connect to Socket.io
-      const newSocket = io("wss://chat-app-backend-smoky.vercel.app");
+      const newSocket = io("https://chat-app-backend-smoky.vercel.app", {
+        transports: ["websocket", "polling"], // Explicitly define transports
+        withCredentials: true, // Ensure credentials are included
+      });
 
       setSocket(newSocket);
 
