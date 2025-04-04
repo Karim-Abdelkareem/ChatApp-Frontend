@@ -28,21 +28,27 @@ export default function Chats() {
   }, []);
 
   useEffect(() => {
-    // Connect to Socket.io
-    const newSocket = io("https://chat-app-backend-smoky.vercel.app");
-    setSocket(newSocket);
+    if (senderId) {
+      // Connect to Socket.io
+      const newSocket = io("https://chat-app-backend-smoky.vercel.app", {
+        transports: ["websocket", "polling"], // Explicitly define transports
+        withCredentials: true, // Ensure credentials are included
+      });
 
-    // Register the user with Socket.io
-    newSocket.emit("register", senderId);
+      setSocket(newSocket);
 
-    // Listen for incoming messages
-    newSocket.on("receive_private_message", (message) => {
-      setMessages((prev) => [...prev, message]);
-    });
+      // Register the user with Socket.io
+      newSocket.emit("register", senderId);
 
-    return () => {
-      newSocket.disconnect();
-    };
+      // Listen for incoming messages
+      newSocket.on("receive_private_message", (message) => {
+        setMessages((prev) => [...prev, message]);
+      });
+
+      return () => {
+        newSocket.disconnect();
+      };
+    }
   }, [senderId]);
 
   useEffect(() => {
@@ -78,6 +84,7 @@ export default function Chats() {
         }
       } catch (error) {
         console.error("Error fetching messages:", error);
+        alert("There was an issue loading the messages. Please try again.");
       }
     };
 
@@ -89,10 +96,10 @@ export default function Chats() {
   }, [receiverId, users]);
 
   useEffect(() => {
-    if (receiverId && messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView();
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [receiverId, messages]);
+  }, [messages]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -105,9 +112,6 @@ export default function Chats() {
       timestamp: new Date().toISOString(),
     };
 
-    // Send message via Socket.io
-    socket.emit("send_private_message", messageData);
-
     // Optimistically update UI
     setMessages((prev) => [...prev, messageData]);
 
@@ -117,10 +121,25 @@ export default function Chats() {
           Authorization: `${localStorage.getItem("token")}`,
         },
       });
+
+      // Send message via Socket.io
+      socket.emit("send_private_message", messageData);
+
+      // Clear message input
       setNewMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
+
+      // If the message fails to send, remove the optimistically added message
+      setMessages((prev) =>
+        prev.filter((msg) => msg.timestamp !== messageData.timestamp)
+      );
     }
+  };
+
+  const handleCloseChat = () => {
+    setActiveChat(null);
+    navigate("/chats");
   };
 
   return (
@@ -167,10 +186,7 @@ export default function Chats() {
                     {activeChat.name}
                   </h2>
                   <button
-                    onClick={() => {
-                      navigate("/chats");
-                      setActiveChat(null);
-                    }}
+                    onClick={handleCloseChat}
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     <svg
@@ -262,10 +278,7 @@ export default function Chats() {
                     </h2>
                   </div>
                   <button
-                    onClick={() => {
-                      navigate("/chats");
-                      setActiveChat(null);
-                    }}
+                    onClick={handleCloseChat}
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     <svg
@@ -284,7 +297,8 @@ export default function Chats() {
                     </svg>
                   </button>
                 </div>
-                <div className="flex-1 h-[calc(100vh-150px)] overflow-y-auto p-4 space-y-4">
+
+                <div className="overflow-y-auto p-4 space-y-4">
                   {messages.map((message, index) => (
                     <div
                       key={index}
@@ -308,27 +322,25 @@ export default function Chats() {
                       </div>
                     </div>
                   ))}
-                  <div ref={messagesEndRef} />
-                </div>
-
-                <div className="p-4 border-t border-gray-700 bg-gray-800/50 backdrop-blur-sm">
-                  <form onSubmit={handleSendMessage} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Write your message here..."
-                      className="flex-1 rounded-lg bg-gray-700 text-white border border-gray-600 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400"
-                    />
-                    <button
-                      type="submit"
-                      className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
-                    >
-                      Send
-                    </button>
-                  </form>
                 </div>
               </>
+            </div>
+            <div className="p-4 bg-gray-800/50 backdrop-blur-sm">
+              <form onSubmit={handleSendMessage} className="flex gap-2">
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Write your message here..."
+                  className="flex-1 rounded-lg bg-gray-700 text-white border border-gray-600 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-400"
+                />
+                <button
+                  type="submit"
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  Send
+                </button>
+              </form>
             </div>
           </div>
         ) : null}
