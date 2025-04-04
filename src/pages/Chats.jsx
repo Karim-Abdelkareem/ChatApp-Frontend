@@ -67,7 +67,7 @@ export default function Chats() {
       try {
         if (senderId && receiverId) {
           const response = await axios.get(
-            `https://chat-app-backend-smoky.vercel.app//api/v1/messages/${senderId}/${receiverId}`,
+            `https://chat-app-backend-smoky.vercel.app/api/v1/messages/${senderId}/${receiverId}`,
             {
               headers: {
                 Authorization: `${localStorage.getItem("token")}`,
@@ -113,7 +113,7 @@ export default function Chats() {
 
     try {
       await axios.post(
-        "https://chat-app-backend-smoky.vercel.app//api/v1/messages",
+        "https://chat-app-backend-smoky.vercel.app/api/v1/messages",
         messageData,
         {
           headers: {
