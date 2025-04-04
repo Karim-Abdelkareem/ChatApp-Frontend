@@ -19,7 +19,7 @@ export default function Chats() {
   const messagesEndRef = useRef(null);
 
   let localhost = "http://localhost:5000/";
-  let publichost = "https://chat-app-backend-smoky.vercel.app/";
+  let publichost = "https://blog-rntf.onrender.com/";
 
   useEffect(() => {
     const token = localStorage.getItem("token");
