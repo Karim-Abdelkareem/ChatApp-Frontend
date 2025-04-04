@@ -15,8 +15,11 @@ export default function Chats() {
   const [newMessage, setNewMessage] = useState("");
   const [users, setUsers] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [messageCache, setMessageCache] = useState({});
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
+  const mobileMessagesEndRef = useRef(null);
 
   let localhost = "http://localhost:5000/";
   let publichost = "https://blog-rntf.onrender.com/";
@@ -71,6 +74,17 @@ export default function Chats() {
     const fetchMessages = async () => {
       try {
         if (senderId && receiverId) {
+          setIsLoading(true);
+          setMessages([]);
+
+          // التحقق من وجود الرسائل في التخزين المؤقت
+          const cacheKey = `${senderId}-${receiverId}`;
+          if (messageCache[cacheKey]) {
+            setMessages(messageCache[cacheKey]);
+            setIsLoading(false);
+            return;
+          }
+
           const response = await axios.get(
             `${publichost}api/v1/messages/${senderId}/${receiverId}`,
             {
@@ -79,11 +93,21 @@ export default function Chats() {
               },
             }
           );
-          setMessages(response.data.data);
+
+          const fetchedMessages = response.data.data;
+          setMessages(fetchedMessages);
+
+          // تخزين الرسائل في التخزين المؤقت
+          setMessageCache((prev) => ({
+            ...prev,
+            [cacheKey]: fetchedMessages,
+          }));
         }
       } catch (error) {
         console.error("Error fetching messages:", error);
         alert("There was an issue loading the messages. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -96,7 +120,10 @@ export default function Chats() {
 
   useEffect(() => {
     if (messages.length > 0) {
+      // التمرير إلى آخر رسالة في العرض المكتبي
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      // التمرير إلى آخر رسالة في العرض المحمول
+      mobileMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
@@ -113,6 +140,13 @@ export default function Chats() {
 
     // Optimistically update UI
     setMessages((prev) => [...prev, messageData]);
+
+    // تحديث التخزين المؤقت
+    const cacheKey = `${senderId}-${receiverId}`;
+    setMessageCache((prev) => ({
+      ...prev,
+      [cacheKey]: [...(prev[cacheKey] || []), messageData],
+    }));
 
     try {
       await axios.post(`${publichost}api/v1/messages`, messageData, {
@@ -133,24 +167,33 @@ export default function Chats() {
       setMessages((prev) =>
         prev.filter((msg) => msg.timestamp !== messageData.timestamp)
       );
+
+      // تحديث التخزين المؤقت
+      setMessageCache((prev) => ({
+        ...prev,
+        [cacheKey]: prev[cacheKey].filter(
+          (msg) => msg.timestamp !== messageData.timestamp
+        ),
+      }));
     }
   };
 
   const handleCloseChat = () => {
     setActiveChat(null);
+    setMessages([]);
     navigate("/chats");
   };
 
   return (
     <>
       <Navbar />
-      <div className="flex bg-gradient-to-br from-gray-900 to-indigo-900">
+      <div className="flex bg-gradient-to-br from-gray-900 to-indigo-900 h-[calc(100vh-64px)]">
         {/* Chat list */}
-        <div className="w-full md:w-1/3 lg:w-1/4 border-r border-gray-700 bg-gray-800/50 backdrop-blur-sm">
+        <div className="w-full md:w-1/3 lg:w-1/4 border-r border-gray-700 bg-gray-800/50 backdrop-blur-sm flex flex-col">
           <div className="p-4 border-b border-gray-700">
             <h2 className="text-xl font-bold text-white">Chats</h2>
           </div>
-          <div className="overflow-y-auto h-[calc(100vh-125px)]">
+          <div className="overflow-y-auto flex-1">
             {users?.map((user) => (
               <div
                 key={user._id}
@@ -175,7 +218,7 @@ export default function Chats() {
         </div>
 
         {/* Chat area */}
-        <div className="w-full md:w-2/3 lg:w-3/4 hidden flex-1 md:flex flex-col">
+        <div className="w-full md:w-2/3 lg:w-3/4 hidden flex-1 md:flex flex-col h-[calc(100vh-64px)]">
           {activeChat ? (
             <>
               {/* Chat header */}
@@ -208,30 +251,40 @@ export default function Chats() {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${
-                      message.sender === senderId
-                        ? "justify-end"
-                        : "justify-start"
-                    }`}
-                  >
-                    <div
-                      className={`max-w-[50%] rounded-lg p-3 ${
-                        message.sender === senderId
-                          ? "bg-indigo-600 text-white"
-                          : "bg-gray-700 text-white"
-                      }`}
-                    >
-                      <p className="text-sm break-words">{message.message}</p>
-                      <span className="text-xs opacity-70 mt-1 block">
-                        {moment(message.timestamp).format("hh:mm A")}
-                      </span>
-                    </div>
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-full">
+                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
                   </div>
-                ))}
-                <div ref={messagesEndRef} />
+                ) : (
+                  <>
+                    {messages.map((message, index) => (
+                      <div
+                        key={index}
+                        className={`flex ${
+                          message.sender === senderId
+                            ? "justify-end"
+                            : "justify-start"
+                        }`}
+                      >
+                        <div
+                          className={`max-w-[50%] rounded-lg p-3 ${
+                            message.sender === senderId
+                              ? "bg-indigo-600 text-white"
+                              : "bg-gray-700 text-white"
+                          }`}
+                        >
+                          <p className="text-sm break-words">
+                            {message.message}
+                          </p>
+                          <span className="text-xs opacity-70 mt-1 block">
+                            {moment(message.timestamp).format("hh:mm A")}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </>
+                )}
               </div>
 
               {/* Message input */}
@@ -262,8 +315,8 @@ export default function Chats() {
 
         {/* Mobile chat area */}
         {activeChat ? (
-          <div className="absolute top-0 left-0 z-10 bg-gradient-to-br from-gray-900 to-indigo-900 w-full  md:hidden flex-1 flex flex-col">
-            <div>
+          <div className="absolute top-0 left-0 z-10 bg-gradient-to-br from-gray-900 to-indigo-900 w-full md:hidden flex flex-col">
+            <div className="flex-1 flex flex-col">
               <>
                 <div className="sticky top-0 z-10 flex justify-between items-center p-4 border-b border-gray-700 bg-gray-800/50 backdrop-blur-sm">
                   <div className="flex items-center gap-2">
@@ -297,30 +350,41 @@ export default function Chats() {
                   </button>
                 </div>
 
-                <div className="overflow-y-auto p-4 space-y-4">
-                  {messages.map((message, index) => (
-                    <div
-                      key={index}
-                      className={`flex ${
-                        message.sender === senderId
-                          ? "justify-end"
-                          : "justify-start"
-                      }`}
-                    >
-                      <div
-                        className={`max-w-[50%] rounded-lg p-3 ${
-                          message.sender === senderId
-                            ? "bg-indigo-600 text-white"
-                            : "bg-gray-700 text-white"
-                        }`}
-                      >
-                        <p className="text-sm break-words">{message.message}</p>
-                        <span className="text-xs opacity-70 mt-1 block">
-                          {moment(message.timestamp).format("hh:mm A")}
-                        </span>
-                      </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[calc(100vh-160px)]">
+                  {isLoading ? (
+                    <div className="flex justify-center items-center h-full">
+                      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
                     </div>
-                  ))}
+                  ) : (
+                    <>
+                      {messages.map((message, index) => (
+                        <div
+                          key={index}
+                          className={`flex ${
+                            message.sender === senderId
+                              ? "justify-end"
+                              : "justify-start"
+                          }`}
+                        >
+                          <div
+                            className={`max-w-[50%] rounded-lg p-3 ${
+                              message.sender === senderId
+                                ? "bg-indigo-600 text-white"
+                                : "bg-gray-700 text-white"
+                            }`}
+                          >
+                            <p className="text-sm break-words">
+                              {message.message}
+                            </p>
+                            <span className="text-xs opacity-70 mt-1 block">
+                              {moment(message.timestamp).format("hh:mm A")}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      <div ref={mobileMessagesEndRef} />
+                    </>
+                  )}
                 </div>
               </>
             </div>
