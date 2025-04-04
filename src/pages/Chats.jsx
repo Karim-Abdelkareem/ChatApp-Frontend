@@ -29,7 +29,7 @@ export default function Chats() {
 
   useEffect(() => {
     // Connect to Socket.io
-    const newSocket = io(publichost);
+    const newSocket = io("https://chat-app-backend-smoky.vercel.app");
     setSocket(newSocket);
 
     // Register the user with Socket.io
