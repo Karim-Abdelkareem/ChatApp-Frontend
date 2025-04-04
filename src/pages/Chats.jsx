@@ -18,6 +18,9 @@ export default function Chats() {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
 
+  let loaclhost = "http://localhost:5000";
+  let publichost = "https://chat-app-backend-smoky.vercel.app/";
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const decodedToken = jwtDecode(token);
@@ -26,7 +29,7 @@ export default function Chats() {
 
   useEffect(() => {
     // Connect to Socket.io
-    const newSocket = io("https://chat-app-backend-smoky.vercel.app/");
+    const newSocket = io(publichost);
     setSocket(newSocket);
 
     // Register the user with Socket.io
